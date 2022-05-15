@@ -5,6 +5,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
+from sklearn.utils import class_weight
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
@@ -12,8 +13,8 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-def Train_Model(model_alg, k):
-    train, test = pd.read_csv('./Folds/Data/train_data_{}.csv'.format(k)), pd.read_csv('./Folds/Data/test_data_{}.csv'.format(k))
+def Train_Model(mol_a, model_alg, k):
+    train, test = pd.read_csv(f'./Folds/Data/train_data_{k}.csv'), pd.read_csv(f'./Folds/Data/test_data_{k}.csv')
     complete = pd.concat([train, test]).reset_index().drop(['index'], axis=1)
     features = np.array(complete[['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15']], dtype=np.float64)
     accuracy = np.array(complete['19'], dtype=np.float64).reshape(-1, 1)
@@ -23,7 +24,11 @@ def Train_Model(model_alg, k):
 
     x_train, x_test, y_train, y_test = train_test_split(train_features, train_accuracy, test_size=0.4, random_state=0)
 
-    model = model_alg.fit(x_train, y_train.ravel())
+    sample_weights_train = class_weight.compute_sample_weight(class_weight='balanced', y=y_train).reshape(-1,1)
+
+    model = None
+    if mol_a == 'LinearRegression': model = model_alg.fit(x_train, y_train.ravel(), sample_weight=sample_weights_train.ravel())
+    else: model = model_alg.fit(x_train, y_train, sample_weight=sample_weights_train)
 
     complete_predictions = model.predict(features).reshape(-1, 1)
     predictions = model.predict(x_test).reshape(-1, 1)
@@ -35,7 +40,7 @@ def Train_Model(model_alg, k):
     for i in tqdm(range(len(param_bench))):
         final_accuracy_file.append(str(param_bench['0'][i]) + '/' + str(param_bench['1'][i]) + '\t' + str(param_bench['out'][i]))
 
-    with open(f"New_test/Results/RandomForestRegressor/RandomForestRegressor_{k}.out", "w") as txt_file:
+    with open(f"Models/Results/{mol_a}/{mol_a}_{k}.out", "w") as txt_file:
         for line in final_accuracy_file:
             txt_file.write("".join(line) + "\n")
 
@@ -43,7 +48,6 @@ def Train_Model(model_alg, k):
     r2_test = r2_score(y_test, predictions)
 
     return accuracy, complete_predictions, y_test, predictions, r2_complete, r2_test
-
 
 def Plot_Estimator(y, y_hat, model, train_test, fold_k, r2):
     print(f'Plotting Facet {model} {train_test} {fold_k}')
@@ -65,13 +69,12 @@ def Plot_Estimator(y, y_hat, model, train_test, fold_k, r2):
     plt.ylabel("Estimated", axis_label_properties)
     plt.xlabel("Accuracy", axis_label_properties)
     plt.tight_layout()
-    plt.savefig(f'New_test/Viz/{model}/{model}_{train_test}_Fold_{fold_k}.png', dpi=1400)
+    plt.savefig(f'Models/Viz/{model}/{model}_{train_test}_Fold_{fold_k}.png', dpi=1400)
     plt.clf()
     plt.close()
 
-
 def run(m_alg, model_alg, k):
-    accuracy, complete_predictions, y_test, predictions, r2_complete, r2_test = Train_Model(model_alg, k)
+    accuracy, complete_predictions, y_test, predictions, r2_complete, r2_test = Train_Model(m_alg, model_alg, k)
     print('Fold', k)
     print(m_alg)
     print('Complete:', r2_complete)
@@ -80,7 +83,7 @@ def run(m_alg, model_alg, k):
     Plot_Estimator(y_test, predictions, m_alg, 'Test', k, r2_test)
     print('Done')
 
-for k in range(12):
+for k in range(4, 12):
     m, m_s = LinearRegression(), 'LinearRegression'
     run(m_s, m, k)
 
