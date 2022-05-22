@@ -5,7 +5,7 @@ import os
 import keras_tuner as kt
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Flatten, Dense, Input, Conv1D, Dropout, MaxPooling1D, Normalization
-from tensorflow.keras.optimizers import SGD, Adam, RMSprop, Adagrad
+from tensorflow.keras.optimizers import SGD, Adam, Adagrad
 from tensorflow.keras.metrics import MeanSquaredError
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
