@@ -70,7 +70,7 @@ for k in range(12):
     tuner.search(
         x_train, 
         y_train, 
-        epochs=50, 
+        epochs=500, 
         validation_data=(x_test, y_test, sample_weights_test), 
         sample_weight=sample_weights_train, 
         callbacks=[early_stopping, my_loss_callback],
@@ -91,3 +91,4 @@ for k in range(12):
     with open('Estimator/Facet_NN_Estimator/Facet_NN_Fold_{}.out'.format(k), 'w') as txt_file:
         for line in final_accuracy_file:
             txt_file.write("".join(line) + "\n")
+
