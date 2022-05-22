@@ -9,7 +9,6 @@ from sklearn.utils import class_weight
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
